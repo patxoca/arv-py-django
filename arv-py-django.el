@@ -1,6 +1,6 @@
-;;; arv-python-django.el --- utilitats per python-django
+;;; arv-py-django.el --- utilitats per python-django
 
-;; $Id: arv-python-django.el 763 2017-11-12 13:22:21Z alex $
+;; $Id: arv-py-django.el 763 2017-11-12 13:22:21Z alex $
 
 ;; Emacs List Archive Entry
 ;; Filename: arv-py-django.el
@@ -436,6 +436,6 @@ buffer, sense extensió."
   (arv/django-mode-setup-keymap))
 
 
-(provide 'arv-django)
+(provide 'arv-py-django)
 
-;;; 'arv-django.el ends here
+;;; 'arv-py-django.el ends here
