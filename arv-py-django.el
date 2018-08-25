@@ -68,6 +68,7 @@
 ;;; Code:
 
 (require 'dash)
+(require 'emacs-djira)
 (require 'f)
 (require 's)
 (require 'thingatpt)
