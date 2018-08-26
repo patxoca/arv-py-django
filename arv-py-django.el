@@ -40,7 +40,7 @@
 ;; Aquest mòdul integra diferents eines per facilitar el treball amb
 ;; django:
 ;;
-;; * emacs-djira: introspecció d'un projecte django
+;; * djira-el: introspecció d'un projecte django
 ;;
 ;; * pony-tpl: la part de pony-mode encarregada de les plantilles
 ;;
@@ -68,7 +68,7 @@
 ;;; Code:
 
 (require 'dash)
-(require 'emacs-djira)
+(require 'djira)
 (require 'f)
 (require 's)
 (require 'thingatpt)
