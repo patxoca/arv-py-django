@@ -213,7 +213,7 @@ buffer, sense extensió."
 
 (defun arv/django--visit-file (dir-rel-path at-app-root)
   (let* ((app-name (arv/django--ido-select-app))
-         (app-root (djira-info-get-app-path app-name)))
+         (app-root (djira-info-get-app-root app-name)))
     (if at-app-root
         (setq app-root (file-name-directory app-root)))
     (setq app-root (concat app-root "/" dir-rel-path))
