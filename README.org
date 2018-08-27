@@ -1,1 +1,4 @@
-emacs minor mode for working with django projects.
+django-el, the django mode from Krypton.
+
+This package will provides commands that will help your work on django
+projects.
