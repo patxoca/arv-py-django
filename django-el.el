@@ -1,9 +1,7 @@
-;;; arv-py-django.el --- utilitats per python-django
-
-;; $Id: arv-py-django.el 763 2017-11-12 13:22:21Z alex $
+;;;django-el.el --- utilitats per python-django
 
 ;; Emacs List Archive Entry
-;; Filename: arv-py-django.el
+;; Filename:django-el.el
 ;; Version: $Revision:$
 ;; Keywords:
 ;; Author:  Alexis Roda <alexis.roda.villalonga@gmail.com>
@@ -84,7 +82,7 @@ cadena."
                                   (1- (point)))))
         (buffer-substring-no-properties start end))))
 
-(defun arv/django--get-template-candidates (filename current-app)
+(defun django-el--get-template-candidates (filename current-app)
   "Return template candidates for `completing-read'.
 
 FILENAME is the filename of a template, relative to the template
@@ -105,7 +103,7 @@ to CURRENT-APP."
           (cons (car app) filename-full))))
     (djira-info-get-all-apps-paths))))
 
-(defun arv/django--get-js-controller-candidates (filename current-app)
+(defun django-el--get-js-controller-candidates (filename current-app)
   (-non-nil
    (mapcar
     (lambda (app)
@@ -115,14 +113,14 @@ to CURRENT-APP."
           (cons (car app) filename-full))))
     (djira-info-get-all-apps-labels))))
 
-(defun arv/django--js-controller-to-filename (name)
+(defun django-el--js-controller-to-filename (name)
   (let ((parts (f-split name)))
     (concat
      (apply 'f-join (append (list (car parts) "js") (cdr parts)))
      ".js")))
 
 ;;;###autoload
-(defun arv/django-jump-to-template ()
+(defun django-el-jump-to-template ()
   "Visita la plantilla en el punt.
 
 Cal que:
@@ -146,7 +144,7 @@ d'una aplicació permet triar quina obrir."
         (current-app (djira-get-app-for-buffer (current-buffer))))
     (if (null filename)
         (message "Point must be over an string.")
-      (let ((candidates (arv/django--get-template-candidates filename current-app)))
+      (let ((candidates (django-el--get-template-candidates filename current-app)))
         (find-file (cdr (assoc
                          (if (= (length candidates) 1)
                              (caar candidates)
@@ -154,7 +152,7 @@ d'una aplicació permet triar quina obrir."
                          candidates)))))))
 
 ;;;###autoload
-(defun arv/django-jump-to-javascript-controller ()
+(defun django-el-jump-to-javascript-controller ()
   "Açò funciona amb el meu workflow.
 
 El controller és un identificador AMD, en el meu cas
@@ -165,8 +163,8 @@ obtindre l'arxiu."
     (if (null amd-name)
         (message "Point must be over an string.")
       (let* ((current-app (djira-get-app-for-buffer (current-buffer)))
-             (filename (arv/django--js-controller-to-filename amd-name))
-             (candidates (arv/django--get-js-controller-candidates filename current-app)))
+             (filename (django-el--js-controller-to-filename amd-name))
+             (candidates (django-el--get-js-controller-candidates filename current-app)))
         (find-file (cdr (assoc
                          (if (= (length candidates) 1)
                              (caar candidates)
@@ -174,7 +172,7 @@ obtindre l'arxiu."
                          candidates)))))))
 
 ;;;###autoload
-(defun arv/django-insert-template-name ()
+(defun django-el-insert-template-name ()
   "Insereix el nom de la plantilla.
 
 El nom es calcula a partir del nom de la app actual i el nom del
@@ -187,7 +185,7 @@ buffer, sense extensió."
             ".html")))
 
 ;;;###autoload
-(defun arv/django-autopair-template-tag ()
+(defun django-el-autopair-template-tag ()
   "Facilita introduir blocs '{% %}'."
   (interactive "")
   (let ((within-block (save-excursion
@@ -198,24 +196,24 @@ buffer, sense extensió."
       (insert "  %")
       (backward-char 2))))
 
-(defun arv/django--ido-select-app ()
+(defun django-el--ido-select-app ()
   (ido-completing-read "App: " (djira-info-get-all-apps-labels) nil t))
 
-(defun arv/django--ido-select-model ()
+(defun django-el--ido-select-model ()
   (ido-completing-read "Model: " (djira-info-get-all-apps-models) nil t))
 
-(defun arv/django--ido-select-url-by-name ()
+(defun django-el--ido-select-url-by-name ()
   (ido-completing-read "View: " (djira-info-get-url-names)))
 
-(defun arv/django-hera-notes ()
+(defun django-el-hera-notes ()
   "Executa `hera_notes'."
   (interactive)
   (compilation-start "hera_manage tasks --emacs"
                      t
                      (lambda (mode) "*notes*")))
 
-(defun arv/django--visit-file (dir-rel-path at-app-root)
-  (let* ((app-name (arv/django--ido-select-app))
+(defun django-el--visit-file (dir-rel-path at-app-root)
+  (let* ((app-name (django-el--ido-select-app))
          (app-root (djira-info-get-app-root app-name)))
     (if at-app-root
         (setq app-root (file-name-directory app-root)))
@@ -224,15 +222,15 @@ buffer, sense extensió."
         (ido-file-internal ido-default-file-method nil app-root)
       (find-file (concat app-root ".py")))))
 
-(defun arv/django-visit-app ()
+(defun django-el-visit-app ()
   "Permet selecionar app i obrir un arxiu dins l'arrel de la app."
   (interactive)
-  (arv/django--visit-file "." nil))
+  (django-el--visit-file "." nil))
 
-(defun arv/django-jump-to-app-class ()
+(defun django-el-jump-to-app-class ()
   "Jump to the app class, if any."
   (interactive)
-  (let* ((data (djira-info-get-app-class-source (arv/django--ido-select-app)))
+  (let* ((data (djira-info-get-app-class-source (django-el--ido-select-app)))
          (path (car data))
          (lineno (cadr data)))
     (if path
@@ -242,7 +240,7 @@ buffer, sense extensió."
           (forward-line (1- lineno)))
       (message "The app don't define an AppConfig class."))))
 
-(defun arv/django-jump-to-settings-module ()
+(defun django-el-jump-to-settings-module ()
   "Jump to the app class, if any."
   (interactive)
   (let ((path (djira-info-get-settings-path)))
@@ -250,10 +248,10 @@ buffer, sense extensió."
         (find-file path)
       (message "Can't find 'settings.py'."))))
 
-(defun arv/django-jump-to-view ()
+(defun django-el-jump-to-view ()
   "Select view by url name and jump to source code."
   (interactive)
-  (let* ((url-name (arv/django--ido-select-url-by-name))
+  (let* ((url-name (django-el--ido-select-url-by-name))
          (view-info (djira-info-get-view-source url-name)))
     (if view-info
         (progn
@@ -262,32 +260,32 @@ buffer, sense extensió."
           (forward-line (1- (cadr view-info))))
       (message "Can't find view."))))
 
-(defun arv/django-visit-app-test-module ()
+(defun django-el-visit-app-test-module ()
   "Permet selecionar app i obrir un arxiu de test."
   (interactive)
-  (arv/django--visit-file "tests" nil))
+  (django-el--visit-file "tests" nil))
 
-(defun arv/django-visit-app-view-module ()
+(defun django-el-visit-app-view-module ()
   "Permet selecionar app i obrir un arxiu de views."
   (interactive)
-  (arv/django--visit-file "views" nil))
+  (django-el--visit-file "views" nil))
 
-(defun arv/django-visit-app-template-file ()
+(defun django-el-visit-app-template-file ()
   "Permet selecionar app i obrir un arxiu de template."
   (interactive)
-  (arv/django--visit-file "templates" nil))
+  (django-el--visit-file "templates" nil))
 
-(defun arv/django-visit-app-model-module ()
+(defun django-el-visit-app-model-module ()
   "Permet selecionar app i obrir un arxiu de models."
   (interactive)
-  (arv/django--visit-file "models" nil))
+  (django-el--visit-file "models" nil))
 
-(defun arv/django-visit-app-static-dir ()
+(defun django-el-visit-app-static-dir ()
   "Permet selecionar app i obrir un arxiu de static."
   (interactive)
-  (arv/django--visit-file "static" nil))
+  (django-el--visit-file "static" nil))
 
-(defun arv/django-visit-project ()
+(defun django-el-visit-project ()
   ""
   (interactive)
   (ido-file-internal ido-default-file-method nil (djira-info-get-project-root)))
@@ -301,15 +299,15 @@ buffer, sense extensió."
 ;; Hi ha documentació per template tags, template filters, models i
 ;; vistes. Només els models i vistes semblen interessants.
 
-(defun arv/django-admindocs-browse ()
+(defun django-el-admindocs-browse ()
   ""
   (interactive)
   (eww "http://localhost:8000/admin/docs"))
 
-(defun arv/django-admindocs-browse-model-docs ()
+(defun django-el-admindocs-browse-model-docs ()
   ""
   (interactive)
-  (let ((model-name (downcase (arv/django--ido-select-model))))
+  (let ((model-name (downcase (django-el--ido-select-model))))
     (if model-name
         (eww (concat "http://localhost:8000/admin/docs/models/" model-name)))))
 
@@ -318,34 +316,34 @@ buffer, sense extensió."
 ;;; des de buffers python-mode. Mirar con definir un minor-mode
 ;;; global.
 
-(defvar arv/django-mode-map (make-sparse-keymap "arv/django-mode") "arv/django-mode keymap")
+(defvar django-el-mode-map (make-sparse-keymap "django-el-mode") "django-el-mode keymap")
 
-(defun arv/django-mode-setup-keymap ()
+(defun django-el-mode-setup-keymap ()
   "Setup a default keymap."
   ;; documentations
-  (define-key arv/django-mode-map (kbd "C-c d d a") 'arv/django-admindocs-browse)
-  (define-key arv/django-mode-map (kbd "C-c d d m") 'arv/django-admindocs-browse-model-docs)
+  (define-key django-el-mode-map (kbd "C-c d d a") 'django-el-admindocs-browse)
+  (define-key django-el-mode-map (kbd "C-c d d m") 'django-el-admindocs-browse-model-docs)
   ;; insert something
-  (define-key arv/django-mode-map (kbd "C-c d i t") 'arv/django-insert-template-name)
+  (define-key django-el-mode-map (kbd "C-c d i t") 'django-el-insert-template-name)
   ;; file navigation
-  (define-key arv/django-mode-map (kbd "C-c d v a") 'arv/django-visit-app)
-  (define-key arv/django-mode-map (kbd "C-c d v m") 'arv/django-visit-app-model-module)
-  (define-key arv/django-mode-map (kbd "C-c d v p") 'arv/django-visit-project)
-  (define-key arv/django-mode-map (kbd "C-c d v s") 'arv/django-visit-app-static-dir)
-  (define-key arv/django-mode-map (kbd "C-c d v t") 'arv/django-visit-app-test-module)
-  (define-key arv/django-mode-map (kbd "C-c d v T") 'arv/django-visit-app-template-file)
-  (define-key arv/django-mode-map (kbd "C-c d v v") 'arv/django-visit-app-view-module)
+  (define-key django-el-mode-map (kbd "C-c d v a") 'django-el-visit-app)
+  (define-key django-el-mode-map (kbd "C-c d v m") 'django-el-visit-app-model-module)
+  (define-key django-el-mode-map (kbd "C-c d v p") 'django-el-visit-project)
+  (define-key django-el-mode-map (kbd "C-c d v s") 'django-el-visit-app-static-dir)
+  (define-key django-el-mode-map (kbd "C-c d v t") 'django-el-visit-app-test-module)
+  (define-key django-el-mode-map (kbd "C-c d v T") 'django-el-visit-app-template-file)
+  (define-key django-el-mode-map (kbd "C-c d v v") 'django-el-visit-app-view-module)
   ;; jump to something
-  (define-key arv/django-mode-map (kbd "C-c d j a") 'arv/django-jump-to-app-class)
-  (define-key arv/django-mode-map (kbd "C-c d j s") 'arv/django-jump-to-settings-module)
-  (define-key arv/django-mode-map (kbd "C-c d j v") 'arv/django-jump-to-view)
+  (define-key django-el-mode-map (kbd "C-c d j a") 'django-el-jump-to-app-class)
+  (define-key django-el-mode-map (kbd "C-c d j s") 'django-el-jump-to-settings-module)
+  (define-key django-el-mode-map (kbd "C-c d j v") 'django-el-jump-to-view)
 )
 
-(define-minor-mode arv/django-mode
-  "Minor mode for working with django." nil " django" arv/django-mode-map
-  (arv/django-mode-setup-keymap))
+(define-minor-mode django-el-mode
+  "Minor mode for working with django." nil " django" django-el-mode-map
+  (django-el-mode-setup-keymap))
 
 
-(provide 'arv-py-django)
+(provide 'django-el)
 
-;;; 'arv-py-django.el ends here
+;;; django-el.el ends here
