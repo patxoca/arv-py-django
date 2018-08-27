@@ -1,4 +1,4 @@
-;;;django-el.el --- utilitats per python-django
+;;;django-el.el --- the django mode from Krypton
 
 ;; Emacs List Archive Entry
 ;; Filename:django-el.el
@@ -8,7 +8,7 @@
 ;; Maintainer:  <alexis.roda.villalonga@gmail.com>
 ;; Created: 2018-03-28
 ;; Description: Minor mode per treballar amb django.
-;; URL: https://github.com/patxoca/arv-py-django
+;; URL: https://github.com/patxoca/django-el
 ;; Compatibility: Emacs24
 
 ;; COPYRIGHT NOTICE
@@ -31,7 +31,7 @@
 ;; Put this file on your Emacs-Lisp load path and add the following
 ;; into your emacs startup file:
 ;;
-;;     (require 'arv-py-django)
+;;     (require 'django-el)
 
 ;;; Commentary:
 ;;
@@ -72,7 +72,7 @@
 (require 'thingatpt)
 
 
-(defun arv-get-string-at-point ()
+(defun django-el--get-string-at-point ()
   "Retorna la cadena en el punt, ni si el punt no està sobre una
 cadena."
   (if (in-string-p)
@@ -140,7 +140,7 @@ aquesta llista només conté una aplicació (l'actual) s'obre la
 plantilla directament (creant-la si és necessari). Si conté més
 d'una aplicació permet triar quina obrir."
   (interactive)
-  (let ((filename (arv-get-string-at-point))
+  (let ((filename (django-el--get-string-at-point))
         (current-app (djira-get-app-for-buffer (current-buffer))))
     (if (null filename)
         (message "Point must be over an string.")
@@ -159,7 +159,7 @@ El controller és un identificador AMD, en el meu cas
 'app/controller'. Cal convertir-ho en 'app/js/controller.js'. per
 obtindre l'arxiu."
   (interactive)
-  (let ((amd-name (arv-get-string-at-point)))
+  (let ((amd-name (django-el--get-string-at-point)))
     (if (null amd-name)
         (message "Point must be over an string.")
       (let* ((current-app (djira-get-app-for-buffer (current-buffer)))
