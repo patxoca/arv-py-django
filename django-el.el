@@ -68,17 +68,35 @@
 (require 'dash)
 (require 'djira)
 (require 'f)
+(require 'ido)
 (require 's)
 (require 'thingatpt)
 
+(defsubst django-el--in-string-p ()
+  "Check if point is in a string.
+
+The function `is-string-p' is deprecated but using a name instead
+of (nth 3 (syntax-ppss) makes code clearer."
+  (nth 3 (syntax-ppss)))
+
+
+(defun django-el--get-current-package-name ()
+  "Return the current package name.
+
+The package name is the name of the directory that contains the
+'setup.py'. If no 'setup.py' is found nil is returned."
+  (let ((parent (locate-dominating-file (buffer-file-name) "setup.py")))
+    (if (null parent)
+        nil
+      (file-name-base (directory-file-name parent)))))
 
 (defun django-el--get-string-at-point ()
   "Retorna la cadena en el punt, ni si el punt no està sobre una
 cadena."
-  (if (in-string-p)
-      (let ((start (save-excursion (while (in-string-p) (forward-char -1))
+  (if (django-el--in-string-p)
+      (let ((start (save-excursion (while (django-el--in-string-p) (forward-char -1))
                                    (1+ (point))))
-            (end  (save-excursion (while (in-string-p) (forward-char 1))
+            (end  (save-excursion (while (django-el--in-string-p) (forward-char 1))
                                   (1- (point)))))
         (buffer-substring-no-properties start end))))
 
@@ -107,7 +125,7 @@ to CURRENT-APP."
   (-non-nil
    (mapcar
     (lambda (app)
-      (let ((filename-full (f-join (cdr app) "static" realname)))
+      (let ((filename-full (f-join (cdr app) "static" filename)))
         (when (or (equal (car app) current-app)
                   (file-exists-p filename-full))
           (cons (car app) filename-full))))
@@ -178,7 +196,7 @@ obtindre l'arxiu."
 El nom es calcula a partir del nom de la app actual i el nom del
 buffer, sense extensió."
   (interactive)
-  (let ((name (pyx/get-current-package-name)))
+  (let ((name (django-el--get-current-package-name)))
     (insert name
             "/"
             (file-name-sans-extension (file-name-base (buffer-file-name)))
