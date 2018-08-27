@@ -204,6 +204,9 @@ buffer, sense extensió."
 (defun arv/django--ido-select-model ()
   (ido-completing-read "Model: " (djira-info-get-all-apps-models) nil t))
 
+(defun arv/django--ido-select-url-by-name ()
+  (ido-completing-read "View: " (djira-info-get-url-names)))
+
 (defun arv/django-hera-notes ()
   "Executa `hera_notes'."
   (interactive)
@@ -225,6 +228,39 @@ buffer, sense extensió."
   "Permet selecionar app i obrir un arxiu dins l'arrel de la app."
   (interactive)
   (arv/django--visit-file "." nil))
+
+(defun arv/django-jump-to-app-class ()
+  "Jump to the app class, if any."
+  (interactive)
+  (let* ((data (djira-info-get-app-class-source (arv/django--ido-select-app)))
+         (path (car data))
+         (lineno (cadr data)))
+    (if path
+        (progn
+          (find-file path)
+          (goto-char (point-min))
+          (forward-line (1- lineno)))
+      (message "The app don't define an AppConfig class."))))
+
+(defun arv/django-jump-to-settings-module ()
+  "Jump to the app class, if any."
+  (interactive)
+  (let ((path (djira-info-get-settings-path)))
+    (if path
+        (find-file path)
+      (message "Can't find 'settings.py'."))))
+
+(defun arv/django-jump-to-view ()
+  "Select view by url name and jump to source code."
+  (interactive)
+  (let* ((url-name (arv/django--ido-select-url-by-name))
+         (view-info (djira-info-get-view-source url-name)))
+    (if view-info
+        (progn
+          (find-file (car view-info))
+          (goto-char (point-min))
+          (forward-line (1- (cadr view-info))))
+      (message "Can't find view."))))
 
 (defun arv/django-visit-app-test-module ()
   "Permet selecionar app i obrir un arxiu de test."
@@ -299,6 +335,10 @@ buffer, sense extensió."
   (define-key arv/django-mode-map (kbd "C-c d v t") 'arv/django-visit-app-test-module)
   (define-key arv/django-mode-map (kbd "C-c d v T") 'arv/django-visit-app-template-file)
   (define-key arv/django-mode-map (kbd "C-c d v v") 'arv/django-visit-app-view-module)
+  ;; jump to something
+  (define-key arv/django-mode-map (kbd "C-c d j a") 'arv/django-jump-to-app-class)
+  (define-key arv/django-mode-map (kbd "C-c d j s") 'arv/django-jump-to-settings-module)
+  (define-key arv/django-mode-map (kbd "C-c d j v") 'arv/django-jump-to-view)
 )
 
 (define-minor-mode arv/django-mode
