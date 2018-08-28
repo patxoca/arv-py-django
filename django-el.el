@@ -140,7 +140,6 @@ which the file we are editing belongs)."
      (apply 'f-join (append (list (car parts) "js") (cdr parts)))
      ".js")))
 
-;;;###autoload
 (defun django-el-jump-to-template ()
   "Visita la plantilla en el punt.
 
@@ -172,7 +171,6 @@ d'una aplicació permet triar quina obrir."
                            (completing-read "Choose app: " candidates nil t nil))
                          candidates)))))))
 
-;;;###autoload
 (defun django-el-jump-to-javascript-controller ()
   "Açò funciona amb el meu workflow.
 
@@ -192,7 +190,6 @@ obtindre l'arxiu."
                            (completing-read "Choose app: " candidates nil t nil))
                          candidates)))))))
 
-;;;###autoload
 (defun django-el-insert-template-name ()
   "Insereix el nom de la plantilla.
 
@@ -205,7 +202,6 @@ buffer, sense extensió."
             (file-name-sans-extension (file-name-base (buffer-file-name)))
             ".html")))
 
-;;;###autoload
 (defun django-el-autopair-template-tag ()
   "Facilita introduir blocs '{% %}'."
   (interactive "")
@@ -345,6 +341,8 @@ python package."
 ;;; des de buffers python-mode. Mirar con definir un minor-mode
 ;;; global.
 
+(defvar django-el-prefix-key "C-c C-d" "Prefix key for the django-el keymap.")
+
 (defvar django-el-mode-map (make-sparse-keymap "django-el-mode") "django-el-mode keymap.")
 
 (defun django-el-mode-setup-keymap ()
@@ -366,9 +364,13 @@ python package."
   (define-key django-el-mode-map (kbd "j a") 'django-el-jump-to-app-class)
   (define-key django-el-mode-map (kbd "j j") 'django-el-jump-to-javascript-controller)
   (define-key django-el-mode-map (kbd "j s") 'django-el-jump-to-settings-module)
+  (define-key django-el-mode-map (kbd "j t") 'django-el-jump-to-template)
   (define-key django-el-mode-map (kbd "j v") 'django-el-jump-to-view)
+
+  (global-set-key (kbd django-el-prefix-key) django-el-mode-map)
 )
 
+;;;###autoload
 (define-minor-mode django-el-mode
   "Minor mode for working with django." nil " django" django-el-mode-map
   (django-el-mode-setup-keymap))
