@@ -1,15 +1,16 @@
-;;;django-el.el --- the django mode from Krypton
+;;; django-el.el --- the django mode from Krypton       -*- lexical-binding: t; -*-
 
 ;; Emacs List Archive Entry
 ;; Filename:django-el.el
-;; Version: $Revision:$
-;; Keywords:
+;; Version: 0.1.0
+;; Keywords: convenience
 ;; Author:  Alexis Roda <alexis.roda.villalonga@gmail.com>
 ;; Maintainer:  <alexis.roda.villalonga@gmail.com>
 ;; Created: 2018-03-28
 ;; Description: Minor mode per treballar amb django.
 ;; URL: https://github.com/patxoca/django-el
 ;; Compatibility: Emacs24
+;; Package-Requires: ((dash "2.12.0") (djira "0.1.0") (emacs "24.3") (f "0.20.0") (s "1.12.0"))
 
 ;; COPYRIGHT NOTICE
 ;;
@@ -47,13 +48,13 @@
 ;; * cada projecte django utilitza un virtualenv independent.
 ;;
 ;; * la ruta de l'arrel del projecte i el nom del mòdul de settings
-;;   arriben a emacs mitjançant les variables d'entorn
+;;   arriben a Emacs mitjançant les variables d'entorn
 ;;   `DJANGO_PROJECT' i `DJANGO_SETTINGS_MODULE' respectivament,
 ;;   definides al activar el virtualenv, per exemple.
 ;;
 ;; * en tot moment només pot haver un projecte obert. Canviar de
-;;   projecte requereix tancar emacs, activar el nou virtualenv i
-;;   obrir emacs.
+;;   projecte requereix tancar Emacs, activar el nou virtualenv i
+;;   obrir Emacs.
 ;;
 ;; Si les necessitats canvien miraré si és possible canviar de
 ;; virtualenv en calent o com tindre varis projectes django obert
@@ -91,8 +92,9 @@ The package name is the name of the directory that contains the
       (file-name-base (directory-file-name parent)))))
 
 (defun django-el--get-string-at-point ()
-  "Retorna la cadena en el punt, ni si el punt no està sobre una
-cadena."
+  "Retorna la cadena en el punt.
+
+Si el punt no està sobre una cadena retorna nil."
   (if (django-el--in-string-p)
       (let ((start (save-excursion (while (django-el--in-string-p) (forward-char -1))
                                    (1+ (point))))
@@ -122,6 +124,12 @@ to CURRENT-APP."
     (djira-info-get-all-apps-paths))))
 
 (defun django-el--get-js-controller-candidates (filename current-app)
+  "Return js controler candidates for `completing-read'.
+
+FILENAME is the filename of a controller, relative to the static
+directory ('app/js/controller.js'). CURRENT-APP is the label of
+some django app (usually the one to which the file we are editing
+belongs)."
   (-non-nil
    (mapcar
     (lambda (app)
@@ -132,6 +140,7 @@ to CURRENT-APP."
     (djira-info-get-all-apps-labels))))
 
 (defun django-el--js-controller-to-filename (name)
+  "Convert an AMD controller NAME to a path."
   (let ((parts (f-split name)))
     (concat
      (apply 'f-join (append (list (car parts) "js") (cdr parts)))
@@ -215,12 +224,15 @@ buffer, sense extensió."
       (backward-char 2))))
 
 (defun django-el--ido-select-app ()
+  "Select an app using IDO."
   (ido-completing-read "App: " (djira-info-get-all-apps-labels) nil t))
 
 (defun django-el--ido-select-model ()
+  "Select a model using IDO."
   (ido-completing-read "Model: " (djira-info-get-all-apps-models) nil t))
 
 (defun django-el--ido-select-url-by-name ()
+  "Select an URL using IDO."
   (ido-completing-read "View: " (djira-info-get-url-names)))
 
 (defun django-el-hera-notes ()
@@ -231,6 +243,11 @@ buffer, sense extensió."
                      (lambda (mode) "*notes*")))
 
 (defun django-el--visit-file (dir-rel-path at-app-root)
+  "Visit a directory within an app.
+
+Select an app and visit the subdirectory DIR-REL-PATH, relative
+to the app root. If AT-APP-ROOT is not nil visit the root of the
+python package."
   (let* ((app-name (django-el--ido-select-app))
          (app-root (djira-info-get-app-root app-name)))
     (if at-app-root
@@ -304,7 +321,7 @@ buffer, sense extensió."
   (django-el--visit-file "static" nil))
 
 (defun django-el-visit-project ()
-  ""
+  "Visit the project directory."
   (interactive)
   (ido-file-internal ido-default-file-method nil (djira-info-get-project-root)))
 
@@ -318,12 +335,12 @@ buffer, sense extensió."
 ;; vistes. Només els models i vistes semblen interessants.
 
 (defun django-el-admindocs-browse ()
-  ""
+  "Browse the admindocs."
   (interactive)
   (eww "http://localhost:8000/admin/docs"))
 
 (defun django-el-admindocs-browse-model-docs ()
-  ""
+  "Browse the model's admindocs."
   (interactive)
   (let ((model-name (downcase (django-el--ido-select-model))))
     (if model-name
@@ -334,27 +351,27 @@ buffer, sense extensió."
 ;;; des de buffers python-mode. Mirar con definir un minor-mode
 ;;; global.
 
-(defvar django-el-mode-map (make-sparse-keymap "django-el-mode") "django-el-mode keymap")
+(defvar django-el-mode-map (make-sparse-keymap "django-el-mode") "django-el-mode keymap.")
 
 (defun django-el-mode-setup-keymap ()
   "Setup a default keymap."
   ;; documentations
-  (define-key django-el-mode-map (kbd "C-c d d a") 'django-el-admindocs-browse)
-  (define-key django-el-mode-map (kbd "C-c d d m") 'django-el-admindocs-browse-model-docs)
+  (define-key django-el-mode-map (kbd "d a") 'django-el-admindocs-browse)
+  (define-key django-el-mode-map (kbd "d m") 'django-el-admindocs-browse-model-docs)
   ;; insert something
-  (define-key django-el-mode-map (kbd "C-c d i t") 'django-el-insert-template-name)
+  (define-key django-el-mode-map (kbd "i t") 'django-el-insert-template-name)
   ;; file navigation
-  (define-key django-el-mode-map (kbd "C-c d v a") 'django-el-visit-app)
-  (define-key django-el-mode-map (kbd "C-c d v m") 'django-el-visit-app-model-module)
-  (define-key django-el-mode-map (kbd "C-c d v p") 'django-el-visit-project)
-  (define-key django-el-mode-map (kbd "C-c d v s") 'django-el-visit-app-static-dir)
-  (define-key django-el-mode-map (kbd "C-c d v t") 'django-el-visit-app-test-module)
-  (define-key django-el-mode-map (kbd "C-c d v T") 'django-el-visit-app-template-file)
-  (define-key django-el-mode-map (kbd "C-c d v v") 'django-el-visit-app-view-module)
+  (define-key django-el-mode-map (kbd "v a") 'django-el-visit-app)
+  (define-key django-el-mode-map (kbd "v m") 'django-el-visit-app-model-module)
+  (define-key django-el-mode-map (kbd "v p") 'django-el-visit-project)
+  (define-key django-el-mode-map (kbd "v s") 'django-el-visit-app-static-dir)
+  (define-key django-el-mode-map (kbd "v t") 'django-el-visit-app-test-module)
+  (define-key django-el-mode-map (kbd "v T") 'django-el-visit-app-template-file)
+  (define-key django-el-mode-map (kbd "v v") 'django-el-visit-app-view-module)
   ;; jump to something
-  (define-key django-el-mode-map (kbd "C-c d j a") 'django-el-jump-to-app-class)
-  (define-key django-el-mode-map (kbd "C-c d j s") 'django-el-jump-to-settings-module)
-  (define-key django-el-mode-map (kbd "C-c d j v") 'django-el-jump-to-view)
+  (define-key django-el-mode-map (kbd "j a") 'django-el-jump-to-app-class)
+  (define-key django-el-mode-map (kbd "j s") 'django-el-jump-to-settings-module)
+  (define-key django-el-mode-map (kbd "j v") 'django-el-jump-to-view)
 )
 
 (define-minor-mode django-el-mode
