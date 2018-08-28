@@ -91,16 +91,24 @@ The package name is the name of the directory that contains the
         nil
       (file-name-base (directory-file-name parent)))))
 
+(defun django-el--search-string-boundary (advance)
+  "Return point at string boundary.
+
+ADVANCE is the direction of the search, -1 to the left, 1 to the
+right. If point is not on a string return nil."
+  (when (django-el--in-string-p)
+    (save-excursion
+      (while (django-el--in-string-p)
+        (forward-char advance))
+      (- (point) advance))))
+
 (defun django-el--get-string-at-point ()
   "Retorna la cadena en el punt.
-
 Si el punt no està sobre una cadena retorna nil."
-  (if (django-el--in-string-p)
-      (let ((start (save-excursion (while (django-el--in-string-p) (forward-char -1))
-                                   (1+ (point))))
-            (end  (save-excursion (while (django-el--in-string-p) (forward-char 1))
-                                  (1- (point)))))
-        (buffer-substring-no-properties start end))))
+  (let ((start (django-el--search-string-boundary -1))
+        (end  (django-el--search-string-boundary 1)))
+    (when (and start end)
+      (buffer-substring-no-properties start end))))
 
 (defun django-el--get-template-candidates (filename current-app)
   "Return template candidates for `completing-read'.
