@@ -110,42 +110,28 @@ Si el punt no està sobre una cadena retorna nil."
     (when (and start end)
       (buffer-substring-no-properties start end))))
 
-(defun django-el--get-template-candidates (filename current-app)
-  "Return template candidates for `completing-read'.
+(defun django-el--collect-candidate-files (subdir filename current-app)
+  "Collect candidates matching FILENAME.
 
-FILENAME is the filename of a template, relative to the template
-directory ('admin/login.html'). CURRENT-APP is the label of some
-django app (usually the one to which the file we are editing
-belongs).
+For each app, find files matching FILENAME in the app's SUBDIR
+directory. The value returned is an alist '(app-label .
+full-path)' that includes all matches plus an entry for
+CURRENT-APP, so that we can create the file in the current app.
 
-This function returns a list of dotted pairs '(APP . FULL-PATH)'
-than can be feed to `completing-read'. The list contains actual
-templates matching FILENAME and, maybe, a fake one corresponding
-to CURRENT-APP."
+SUBDIR is a directory name, like 'templates', 'static' etc.
+
+FILENAME is a filename relative to SUBDIR ('js/something.js').
+
+CURRENT-APP is the label of some django app (usually the one to
+which the file we are editing belongs)."
   (-non-nil
    (mapcar
     (lambda (app)
-      (let ((filename-full (f-join (cdr app) "templates" filename)))
+      (let ((filename-full (f-join (cdr app) subdir filename)))
         (when (or (string= (car app) current-app)
                   (file-exists-p filename-full))
           (cons (car app) filename-full))))
     (djira-info-get-all-apps-paths))))
-
-(defun django-el--get-js-controller-candidates (filename current-app)
-  "Return js controler candidates for `completing-read'.
-
-FILENAME is the filename of a controller, relative to the static
-directory ('app/js/controller.js'). CURRENT-APP is the label of
-some django app (usually the one to which the file we are editing
-belongs)."
-  (-non-nil
-   (mapcar
-    (lambda (app)
-      (let ((filename-full (f-join (cdr app) "static" filename)))
-        (when (or (equal (car app) current-app)
-                  (file-exists-p filename-full))
-          (cons (car app) filename-full))))
-    (djira-info-get-all-apps-labels))))
 
 (defun django-el--js-controller-to-filename (name)
   "Convert an AMD controller NAME to a path."
@@ -179,7 +165,7 @@ d'una aplicació permet triar quina obrir."
         (current-app (djira-get-app-for-buffer (current-buffer))))
     (if (null filename)
         (message "Point must be over an string.")
-      (let ((candidates (django-el--get-template-candidates filename current-app)))
+      (let ((candidates (django-el--collect-candidate-files "templates" filename current-app)))
         (find-file (cdr (assoc
                          (if (= (length candidates) 1)
                              (caar candidates)
@@ -199,7 +185,7 @@ obtindre l'arxiu."
         (message "Point must be over an string.")
       (let* ((current-app (djira-get-app-for-buffer (current-buffer)))
              (filename (django-el--js-controller-to-filename amd-name))
-             (candidates (django-el--get-js-controller-candidates filename current-app)))
+             (candidates (django-el--collect-candidate-files "static" filename current-app)))
         (find-file (cdr (assoc
                          (if (= (length candidates) 1)
                              (caar candidates)
