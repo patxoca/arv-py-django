@@ -378,6 +378,7 @@ python package."
   (define-key django-el-mode-map (kbd "v v") 'django-el-visit-app-view-module)
   ;; jump to something
   (define-key django-el-mode-map (kbd "j a") 'django-el-jump-to-app-class)
+  (define-key django-el-mode-map (kbd "j j") 'django-el-jump-to-javascript-controller)
   (define-key django-el-mode-map (kbd "j s") 'django-el-jump-to-settings-module)
   (define-key django-el-mode-map (kbd "j v") 'django-el-jump-to-view)
 )
