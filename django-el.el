@@ -80,7 +80,6 @@ The function `is-string-p' is deprecated but using a name instead
 of (nth 3 (syntax-ppss) makes code clearer."
   (nth 3 (syntax-ppss)))
 
-
 (defun django-el--get-current-package-name ()
   "Return the current package name.
 
@@ -140,6 +139,54 @@ which the file we are editing belongs)."
      (apply 'f-join (append (list (car parts) "js") (cdr parts)))
      ".js")))
 
+(defun django-el--filename-from-app-and-module (extension)
+  "Make a file name based on current app and python module.
+
+The file name contains the name of the current app as directory
+and the name of the current python module, replacing '.py' with
+EXTENSION, as file name. This is useful for naming templates
+etc."
+  (f-join (django-el--get-current-package-name)
+          (concat (file-name-sans-extension (file-name-base (buffer-file-name)))
+                  extension)))
+
+(defun django-el--ido-select-app ()
+  "Select an app using IDO."
+  (ido-completing-read "App: " (djira-info-get-all-apps-labels) nil t))
+
+(defun django-el--ido-select-model ()
+  "Select a model using IDO."
+  (ido-completing-read "Model: " (djira-info-get-all-apps-models) nil t))
+
+(defun django-el--ido-select-url-by-name ()
+  "Select an URL using IDO."
+  (ido-completing-read "View: " (djira-info-get-url-names)))
+
+(defun django-el--visit-file (dir-rel-path at-app-root)
+  "Visit a directory within an app.
+
+Select an app and visit the subdirectory DIR-REL-PATH, relative
+to the app root. If AT-APP-ROOT is not nil visit the root of the
+python package."
+  (let* ((app-name (django-el--ido-select-app))
+         (app-root (djira-info-get-app-root app-name)))
+    (if at-app-root
+        (setq app-root (file-name-directory app-root)))
+    (setq app-root (concat app-root "/" dir-rel-path))
+    (if (f-directory-p app-root)
+        (ido-file-internal ido-default-file-method nil app-root)
+      (find-file (concat app-root ".py")))))
+
+
+;;;                    _             _   _
+;;;  _ __   __ ___   _(_) __ _  __ _| |_(_) ___  _ __
+;;; | '_ \ / _` \ \ / / |/ _` |/ _` | __| |/ _ \| '_ \
+;;; | | | | (_| |\ V /| | (_| | (_| | |_| | (_) | | | |
+;;; |_| |_|\__,_| \_/ |_|\__, |\__,_|\__|_|\___/|_| |_|
+;;;                      |___/
+
+;; jumping
+
 (defun django-el-jump-to-template ()
   "Visita la plantilla en el punt.
 
@@ -190,84 +237,6 @@ obtindre l'arxiu."
                            (completing-read "Choose app: " candidates nil t nil))
                          candidates)))))))
 
-
-(defun django-el--filename-from-app-and-module (extension)
-  "Make a file name based on current app and python module.
-
-The file name contains the name of the current app as directory
-and the name of the current python module, replacing '.py' with
-EXTENSION, as file name. This is useful for naming templates
-etc."
-  (f-join (django-el--get-current-package-name)
-          (concat (file-name-sans-extension (file-name-base (buffer-file-name)))
-                  extension)))
-
-(defun django-el-insert-template-name ()
-  "Insereix el nom de la plantilla.
-
-El nom es calcula a partir del nom de la app actual i el nom del
-buffer, sense extensió."
-  (interactive)
-  (insert "\"" (django-el--filename-from-app-and-module ".html") "\""))
-
-(defun django-el-insert-amd-js-controller-name ()
-  "Insereix el nom de la plantilla.
-
-El nom es calcula a partir del nom de la app actual i el nom del
-buffer, sense extensió."
-  (interactive)
-  (insert "\"" (django-el--filename-from-app-and-module "") "\""))
-
-(defun django-el-autopair-template-tag ()
-  "Facilita introduir blocs '{% %}'."
-  (interactive "")
-  (let ((within-block (save-excursion
-                        (backward-char)
-                        (looking-at "{"))))
-    (insert "%")
-    (when within-block
-      (insert "  %")
-      (backward-char 2))))
-
-(defun django-el--ido-select-app ()
-  "Select an app using IDO."
-  (ido-completing-read "App: " (djira-info-get-all-apps-labels) nil t))
-
-(defun django-el--ido-select-model ()
-  "Select a model using IDO."
-  (ido-completing-read "Model: " (djira-info-get-all-apps-models) nil t))
-
-(defun django-el--ido-select-url-by-name ()
-  "Select an URL using IDO."
-  (ido-completing-read "View: " (djira-info-get-url-names)))
-
-(defun django-el-hera-notes ()
-  "Executa `hera_notes'."
-  (interactive)
-  (compilation-start "hera_manage tasks --emacs"
-                     t
-                     (lambda (mode) "*notes*")))
-
-(defun django-el--visit-file (dir-rel-path at-app-root)
-  "Visit a directory within an app.
-
-Select an app and visit the subdirectory DIR-REL-PATH, relative
-to the app root. If AT-APP-ROOT is not nil visit the root of the
-python package."
-  (let* ((app-name (django-el--ido-select-app))
-         (app-root (djira-info-get-app-root app-name)))
-    (if at-app-root
-        (setq app-root (file-name-directory app-root)))
-    (setq app-root (concat app-root "/" dir-rel-path))
-    (if (f-directory-p app-root)
-        (ido-file-internal ido-default-file-method nil app-root)
-      (find-file (concat app-root ".py")))))
-
-(defun django-el-visit-app ()
-  "Permet selecionar app i obrir un arxiu dins l'arrel de la app."
-  (interactive)
-  (django-el--visit-file "." nil))
-
 (defun django-el-jump-to-app-class ()
   "Jump to the app class, if any."
   (interactive)
@@ -301,6 +270,14 @@ python package."
           (forward-line (1- (cadr view-info))))
       (message "Can't find view."))))
 
+
+;; visiting:
+
+(defun django-el-visit-app ()
+  "Permet selecionar app i obrir un arxiu dins l'arrel de la app."
+  (interactive)
+  (django-el--visit-file "." nil))
+
 (defun django-el-visit-app-test-module ()
   "Permet selecionar app i obrir un arxiu de test."
   (interactive)
@@ -330,6 +307,70 @@ python package."
   "Visit the project directory."
   (interactive)
   (ido-file-internal ido-default-file-method nil (djira-info-get-project-root)))
+
+
+;;;  _                     _   _
+;;; (_)_ __  ___  ___ _ __| |_(_) ___  _ __
+;;; | | '_ \/ __|/ _ \ '__| __| |/ _ \| '_ \
+;;; | | | | \__ \  __/ |  | |_| | (_) | | | |
+;;; |_|_| |_|___/\___|_|   \__|_|\___/|_| |_|
+
+
+(defun django-el-insert-template-name ()
+  "Insereix el nom de la plantilla.
+
+El nom es calcula a partir del nom de la app actual i el nom del
+buffer, sense extensió."
+  (interactive)
+  (insert "\"" (django-el--filename-from-app-and-module ".html") "\""))
+
+(defun django-el-insert-amd-js-controller-name ()
+  "Insereix el nom de la plantilla.
+
+El nom es calcula a partir del nom de la app actual i el nom del
+buffer, sense extensió."
+  (interactive)
+  (insert "\"" (django-el--filename-from-app-and-module "") "\""))
+
+
+;;;  _                       _       _
+;;; | |_ ___ _ __ ___  _ __ | | __ _| |_ ___  ___
+;;; | __/ _ \ '_ ` _ \| '_ \| |/ _` | __/ _ \/ __|
+;;; | ||  __/ | | | | | |_) | | (_| | ||  __/\__ \
+;;;  \__\___|_| |_| |_| .__/|_|\__,_|\__\___||___/
+;;;                   |_|
+
+(defun django-el-autopair-template-tag ()
+  "Facilita introduir blocs '{% %}'."
+  (interactive "")
+  (let ((within-block (save-excursion
+                        (backward-char)
+                        (looking-at "{"))))
+    (insert "%")
+    (when within-block
+      (insert "  %")
+      (backward-char 2))))
+
+
+;;;  _ __ ___   __ _ _ __   __ _  __ _  ___   _ __  _   _
+;;; | '_ ` _ \ / _` | '_ \ / _` |/ _` |/ _ \ | '_ \| | | |
+;;; | | | | | | (_| | | | | (_| | (_| |  __/_| |_) | |_| |
+;;; |_| |_| |_|\__,_|_| |_|\__,_|\__, |\___(_) .__/ \__, |
+;;;                              |___/       |_|    |___/
+
+(defun django-el-hera-notes ()
+  "Executa `hera_notes'."
+  (interactive)
+  (compilation-start "hera_manage tasks --emacs"
+                     t
+                     (lambda (mode) "*notes*")))
+
+
+;;;            _           _           _
+;;;   __ _  __| |_ __ ___ (_)_ __   __| | ___   ___ ___
+;;;  / _` |/ _` | '_ ` _ \| | '_ \ / _` |/ _ \ / __/ __|
+;;; | (_| | (_| | | | | | | | | | | (_| | (_) | (__\__ \
+;;;  \__,_|\__,_|_| |_| |_|_|_| |_|\__,_|\___/ \___|___/
 
 ;; TODO: es pot navegar a la documentacions dels models en
 ;; http://localhost:8000/admin/docs/models
