@@ -102,8 +102,9 @@ right. If point is not on a string return nil."
       (- (point) advance))))
 
 (defun django-el--get-string-at-point ()
-  "Retorna la cadena en el punt.
-Si el punt no està sobre una cadena retorna nil."
+  "Return string at point.
+
+Return nil if string is not over an string."
   (let ((start (django-el--search-string-boundary -1))
         (end  (django-el--search-string-boundary 1)))
     (when (and start end)
@@ -188,24 +189,17 @@ python package."
 ;; jumping
 
 (defun django-el-jump-to-template ()
-  "Visita la plantilla en el punt.
+  "Jump to the template at point.
 
-Cal que:
+Point must be on an string containing a filename path relative to
+the 'templates' directory (as per django conventions).
 
-* el punt es trobi sobre una cadena. La ruta de la plantilla es
-  determina pel valor de la cadena sobre la que es troba el punt.
+Django allows overriding templates from other apps, so this
+function collects all candidates. If there's only one candidate
+it jumps straight to it otherwise allow choosing the app.
 
-* la ruta de la plantilla sigui relativa al directori 'templates'
-  de l'aplicació (seguint el conveni django).
-
-La funció opera contruint una llista amb les aplicacions que
-contenen la plantilla. Per simplificar la creació de plantilles
-aquesta llista sempre contindrà el nom de l'aplicació
-actual (l'aplicació que conté l'arxiu des del que s'ha cridat a
-la funció) independenment de que contingui la plantilla. Si
-aquesta llista només conté una aplicació (l'actual) s'obre la
-plantilla directament (creant-la si és necessari). Si conté més
-d'una aplicació permet triar quina obrir."
+The list will always contain an entry for the current app as a
+mean of creating the template if it doesn't exist."
   (interactive)
   (let ((filename (django-el--get-string-at-point))
         (current-app (djira-get-app-for-buffer (current-buffer))))
@@ -219,11 +213,11 @@ d'una aplicació permet triar quina obrir."
                          candidates)))))))
 
 (defun django-el-jump-to-javascript-controller ()
-  "Açò funciona amb el meu workflow.
+  "Jump to javascript controller at point.
 
-El controller és un identificador AMD, en el meu cas
-'app/controller'. Cal convertir-ho en 'app/js/controller.js'. per
-obtindre l'arxiu."
+Point must be on an string containing an AMD module identifier in
+the form 'app/module'. The function opens the file
+'app/js/module.js'."
   (interactive)
   (let ((amd-name (django-el--get-string-at-point)))
     (if (null amd-name)
@@ -251,7 +245,7 @@ obtindre l'arxiu."
       (message "The app don't define an AppConfig class."))))
 
 (defun django-el-jump-to-settings-module ()
-  "Jump to the app class, if any."
+  "Jump to the project's 'settings.py' module."
   (interactive)
   (let ((path (djira-info-get-settings-path)))
     (if path
@@ -274,37 +268,37 @@ obtindre l'arxiu."
 ;; visiting:
 
 (defun django-el-visit-app ()
-  "Permet selecionar app i obrir un arxiu dins l'arrel de la app."
+  "Select app and visit app's root."
   (interactive)
   (django-el--visit-file "." nil))
 
 (defun django-el-visit-app-test-module ()
-  "Permet selecionar app i obrir un arxiu de test."
+  "Select app and visit 'tests' module."
   (interactive)
   (django-el--visit-file "tests" nil))
 
 (defun django-el-visit-app-view-module ()
-  "Permet selecionar app i obrir un arxiu de views."
+  "Select app and visit 'views' module."
   (interactive)
   (django-el--visit-file "views" nil))
 
 (defun django-el-visit-app-template-file ()
-  "Permet selecionar app i obrir un arxiu de template."
+  "Select app and visit 'templates' directory."
   (interactive)
   (django-el--visit-file "templates" nil))
 
 (defun django-el-visit-app-model-module ()
-  "Permet selecionar app i obrir un arxiu de models."
+  "Select app and visit 'models' module."
   (interactive)
   (django-el--visit-file "models" nil))
 
 (defun django-el-visit-app-static-dir ()
-  "Permet selecionar app i obrir un arxiu de static."
+  "Select app and visit 'static' directory."
   (interactive)
   (django-el--visit-file "static" nil))
 
 (defun django-el-visit-project ()
-  "Visit the project directory."
+  "Visit the 'project' directory."
   (interactive)
   (ido-file-internal ido-default-file-method nil (djira-info-get-project-root)))
 
@@ -317,18 +311,20 @@ obtindre l'arxiu."
 
 
 (defun django-el-insert-template-name ()
-  "Insereix el nom de la plantilla.
+  "Generate and insert template name.
 
-El nom es calcula a partir del nom de la app actual i el nom del
-buffer, sense extensió."
+Convenience function that inserts a template name made from the
+current app and python module. Useful if you keep each view in a
+separated module."
   (interactive)
   (insert "\"" (django-el--filename-from-app-and-module ".html") "\""))
 
 (defun django-el-insert-amd-js-controller-name ()
-  "Insereix el nom de la plantilla.
+  "Generate and insert amd module name.
 
-El nom es calcula a partir del nom de la app actual i el nom del
-buffer, sense extensió."
+Convenience function that inserts a javascript amd module name
+made from the current app and python module. Useful if you
+associate just a js module per view (a controller)."
   (interactive)
   (insert "\"" (django-el--filename-from-app-and-module "") "\""))
 
@@ -341,7 +337,9 @@ buffer, sense extensió."
 ;;;                   |_|
 
 (defun django-el-autopair-template-tag ()
-  "Facilita introduir blocs '{% %}'."
+  "Helps inserting '{% %}' in templates.
+
+Pressing '%' after a '{' inserts a second '%'."
   (interactive "")
   (let ((within-block (save-excursion
                         (backward-char)
@@ -359,7 +357,7 @@ buffer, sense extensió."
 ;;;                              |___/       |_|    |___/
 
 (defun django-el-hera-notes ()
-  "Executa `hera_notes'."
+  "Execute management command 'tasks'."
   (interactive)
   (compilation-start "hera_manage tasks --emacs"
                      t
