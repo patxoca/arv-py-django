@@ -190,17 +190,33 @@ obtindre l'arxiu."
                            (completing-read "Choose app: " candidates nil t nil))
                          candidates)))))))
 
+
+(defun django-el--filename-from-app-and-module (extension)
+  "Make a file name based on current app and python module.
+
+The file name contains the name of the current app as directory
+and the name of the current python module, replacing '.py' with
+EXTENSION, as file name. This is useful for naming templates
+etc."
+  (f-join (django-el--get-current-package-name)
+          (concat (file-name-sans-extension (file-name-base (buffer-file-name)))
+                  extension)))
+
 (defun django-el-insert-template-name ()
   "Insereix el nom de la plantilla.
 
 El nom es calcula a partir del nom de la app actual i el nom del
 buffer, sense extensió."
   (interactive)
-  (let ((name (django-el--get-current-package-name)))
-    (insert name
-            "/"
-            (file-name-sans-extension (file-name-base (buffer-file-name)))
-            ".html")))
+  (insert "\"" (django-el--filename-from-app-and-module ".html") "\""))
+
+(defun django-el-insert-amd-js-controller-name ()
+  "Insereix el nom de la plantilla.
+
+El nom es calcula a partir del nom de la app actual i el nom del
+buffer, sense extensió."
+  (interactive)
+  (insert "\"" (django-el--filename-from-app-and-module "") "\""))
 
 (defun django-el-autopair-template-tag ()
   "Facilita introduir blocs '{% %}'."
@@ -351,6 +367,7 @@ python package."
   (define-key django-el-mode-map (kbd "d a") 'django-el-admindocs-browse)
   (define-key django-el-mode-map (kbd "d m") 'django-el-admindocs-browse-model-docs)
   ;; insert something
+  (define-key django-el-mode-map (kbd "i j") 'django-el-insert-amd-js-controller-name)
   (define-key django-el-mode-map (kbd "i t") 'django-el-insert-template-name)
   ;; file navigation
   (define-key django-el-mode-map (kbd "v a") 'django-el-visit-app)
