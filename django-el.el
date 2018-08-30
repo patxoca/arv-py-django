@@ -319,6 +319,11 @@ separated module."
   (interactive)
   (insert "\"" (django-el--filename-from-app-and-module ".html") "\""))
 
+(defun django-el-insert-url-name ()
+  "Insert url name."
+  (interactive)
+  (insert "\"" (django-el--ido-select-url-by-name) "\""))
+
 (defun django-el-insert-amd-js-controller-name ()
   "Generate and insert amd module name.
 
@@ -408,6 +413,7 @@ Pressing '%' after a '{' inserts a second '%'."
   ;; insert something
   (define-key django-el-mode-map (kbd "i j") 'django-el-insert-amd-js-controller-name)
   (define-key django-el-mode-map (kbd "i t") 'django-el-insert-template-name)
+  (define-key django-el-mode-map (kbd "i u") 'django-el-insert-url-name)
   ;; file navigation
   (define-key django-el-mode-map (kbd "v a") 'django-el-visit-app)
   (define-key django-el-mode-map (kbd "v m") 'django-el-visit-app-model-module)
