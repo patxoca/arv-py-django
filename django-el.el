@@ -407,6 +407,8 @@ Pressing '%' after a '{' inserts a second '%'."
 
 (defun django-el-mode-setup-keymap ()
   "Setup a default keymap."
+  (define-prefix-command 'django-el-mode-map)
+
   ;; documentations
   (define-key django-el-mode-map (kbd "d a") 'django-el-admindocs-browse)
   (define-key django-el-mode-map (kbd "d m") 'django-el-admindocs-browse-model-docs)
