@@ -401,6 +401,11 @@ Pressing '%' after a '{' inserts a second '%'."
 ;;; des de buffers python-mode. Mirar con definir un minor-mode
 ;;; global.
 
+(defun django-el-refresh-cache ()
+  "Refresh the cache."
+  (interactive)
+  (djira--cache-invalidate))
+
 (defvar django-el-prefix-key "C-c C-d" "Prefix key for the django-el keymap.")
 
 (defvar django-el-mode-map (make-sparse-keymap "django-el-mode") "django-el-mode keymap.")
@@ -430,6 +435,8 @@ Pressing '%' after a '{' inserts a second '%'."
   (define-key django-el-mode-map (kbd "j s") 'django-el-jump-to-settings-module)
   (define-key django-el-mode-map (kbd "j t") 'django-el-jump-to-template)
   (define-key django-el-mode-map (kbd "j v") 'django-el-jump-to-view)
+  ;; assorted
+  (define-key django-el-mode-map (kbd "C-l") 'django-el-refresh-cache)
 
   (global-set-key (kbd django-el-prefix-key) django-el-mode-map)
 )
