@@ -163,6 +163,12 @@ etc."
   "Select an URL using IDO."
   (ido-completing-read "View: " (djira-info-get-url-names)))
 
+(defun django-el--ido-select-url-by-pattern ()
+  "Select an URL by pattern using IDO. Returns the URL name."
+  (let ((patterns (djira-info-get-url-pattern-name-alist)))
+    (cdr (assoc (ido-completing-read "URL: " (mapcar #'car patterns))
+                patterns))))
+
 (defun django-el--visit-file (dir-rel-path at-app-root)
   "Visit a directory within an app.
 
@@ -252,11 +258,9 @@ the form 'app/module'. The function opens the file
         (find-file path)
       (message "Can't find 'settings.py'."))))
 
-(defun django-el-jump-to-view ()
-  "Select view by url name and jump to source code."
-  (interactive)
-  (let* ((url-name (django-el--ido-select-url-by-name))
-         (view-info (djira-info-get-view-source url-name)))
+(defun django-el--jump-to-view-by-url-name (url-name)
+  "Jump to the view definition given its name."
+  (let ((view-info (djira-info-get-view-source url-name)))
     (if view-info
         (progn
           (find-file (car view-info))
@@ -264,6 +268,15 @@ the form 'app/module'. The function opens the file
           (forward-line (1- (cadr view-info))))
       (message "Can't find view."))))
 
+(defun django-el-jump-to-view-by-url-name ()
+  "Select view by url name and jump to definition."
+  (interactive)
+  (django-el--jump-to-view-by-url-name (django-el--ido-select-url-by-name)))
+
+(defun django-el-jump-to-view-by-url-pattern ()
+  "Select view by url pattern and jump to definition."
+  (interactive)
+  (django-el--jump-to-view-by-url-name (django-el--ido-select-url-by-pattern)))
 
 ;; visiting:
 
@@ -434,7 +447,8 @@ Pressing '%' after a '{' inserts a second '%'."
   (define-key django-el-mode-map (kbd "j j") 'django-el-jump-to-javascript-controller)
   (define-key django-el-mode-map (kbd "j s") 'django-el-jump-to-settings-module)
   (define-key django-el-mode-map (kbd "j t") 'django-el-jump-to-template)
-  (define-key django-el-mode-map (kbd "j v") 'django-el-jump-to-view)
+  (define-key django-el-mode-map (kbd "j v") 'django-el-jump-to-view-by-url-name)
+  (define-key django-el-mode-map (kbd "j V") 'django-el-jump-to-view-by-url-pattern)
   ;; assorted
   (define-key django-el-mode-map (kbd "C-l") 'django-el-refresh-cache)
 
