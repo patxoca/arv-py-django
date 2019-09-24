@@ -461,6 +461,10 @@ Pressing '%' after a '{' inserts a second '%'."
   (django-el-mode-setup-keymap))
 
 
+;;;###autoload
+(define-globalized-minor-mode django-el-global-mode django-el-mode django-el-mode)
+
+
 (provide 'django-el)
 
 ;;; django-el.el ends here
