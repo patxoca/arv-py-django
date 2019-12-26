@@ -278,6 +278,24 @@ the form 'app/module'. The function opens the file
   (interactive)
   (django-el--jump-to-view-by-url-name (django-el--ido-select-url-by-pattern)))
 
+(defun django-el-jump-to-current-model-test-factory ()
+  "Jump to the model factory used for testing the current model.
+
+This command makes some assumptions about the project structure:
+
+- The factories are stored in the directory '../tests/factories',
+  relative to the 'models' directory.
+
+- Each model has its own module, say 'models/my_model.py'.
+
+- The factory for each model has its own module that is named
+  after the model's module, say 'tests/factories/my_mode.py'."
+  (interactive)
+  (let ((factory-path (f-join ".." "tests" "factories" (f-filename buffer-file-name))))
+    (if (f-exists? factory-path)
+        (find-file factory-path)
+      (user-error (format "Can't find model factory: %s" factory-path)))))
+
 ;; visiting:
 
 (defun django-el-visit-app ()
@@ -444,6 +462,7 @@ Pressing '%' after a '{' inserts a second '%'."
   (define-key django-el-mode-map (kbd "v v") 'django-el-visit-app-view-module)
   ;; jump to something
   (define-key django-el-mode-map (kbd "j a") 'django-el-jump-to-app-class)
+  (define-key django-el-mode-map (kbd "j f") 'django-el-jump-to-current-model-test-factory)
   (define-key django-el-mode-map (kbd "j j") 'django-el-jump-to-javascript-controller)
   (define-key django-el-mode-map (kbd "j s") 'django-el-jump-to-settings-module)
   (define-key django-el-mode-map (kbd "j t") 'django-el-jump-to-template)
