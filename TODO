@@ -1,1 +1,8 @@
 -*- mode: org -*-
+
+* TODOs
+
+** push the point
+
+When visition/jumping to other files it may be useful to push the
+point in order to quickly return to the current file.
