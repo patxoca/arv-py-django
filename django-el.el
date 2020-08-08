@@ -392,7 +392,7 @@ Pressing '%' after a '{' inserts a second '%'."
 ;;; |_| |_| |_|\__,_|_| |_|\__,_|\__, |\___(_) .__/ \__, |
 ;;;                              |___/       |_|    |___/
 
-(defun django-el-hera-notes ()
+(defun django-el-manage-hera-notes ()
   "Execute management command 'tasks'."
   (interactive)
   (compilation-start "hera_manage tasks --emacs"
