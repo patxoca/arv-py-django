@@ -399,6 +399,28 @@ Pressing '%' after a '{' inserts a second '%'."
                      t
                      (lambda (mode) "*notes*")))
 
+(defun django-el--manage-interactive (command &rest args)
+  "Execute interactive management command in a term."
+  (interactive)
+  (let* ((root (djira-info-get-project-root))
+         (bufname (concat "django-" command))
+         (buffer (apply #'make-term bufname (f-join root "manage.py") nil command args)))
+    (with-current-buffer buffer
+      (term-mode)
+      (term-char-mode))
+    (switch-to-buffer buffer)))
+
+(defun django-el-manage-shell ()
+  "Execute management command 'shell'."
+  (interactive)
+  (django-el--manage-interactive "shell"))
+
+(defun django-el-manage-dbshell ()
+  "Execute management command 'dbshell'."
+  (interactive)
+  (django-el--manage-interactive "dbshell"))
+
+
 
 ;;;            _           _           _
 ;;;   __ _  __| |_ __ ___ (_)_ __   __| | ___   ___ ___
@@ -452,6 +474,9 @@ Pressing '%' after a '{' inserts a second '%'."
   (define-key django-el-mode-map (kbd "i j") 'django-el-insert-amd-js-controller-name)
   (define-key django-el-mode-map (kbd "i t") 'django-el-insert-template-name)
   (define-key django-el-mode-map (kbd "i u") 'django-el-insert-url-name)
+  ;; management commands
+  (define-key django-el-mode-map (kbd "m d") 'django-el-manage-dbshell)
+  (define-key django-el-mode-map (kbd "m s") 'django-el-manage-shell)
   ;; file navigation
   (define-key django-el-mode-map (kbd "v a") 'django-el-visit-app)
   (define-key django-el-mode-map (kbd "v m") 'django-el-visit-app-model-module)
