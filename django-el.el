@@ -476,6 +476,7 @@ Pressing '%' after a '{' inserts a second '%'."
   (define-key django-el-mode-map (kbd "i u") 'django-el-insert-url-name)
   ;; management commands
   (define-key django-el-mode-map (kbd "m d") 'django-el-manage-dbshell)
+  (define-key django-el-mode-map (kbd "m n") 'django-el-manage-hera-notes)
   (define-key django-el-mode-map (kbd "m s") 'django-el-manage-shell)
   ;; file navigation
   (define-key django-el-mode-map (kbd "v a") 'django-el-visit-app)
