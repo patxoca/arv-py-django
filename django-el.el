@@ -205,13 +205,17 @@ function collects all candidates. If there's only one candidate
 it jumps straight to it otherwise allow choosing the app.
 
 The list will always contain an entry for the current app as a
-mean of creating the template if it doesn't exist."
+mean of creating the template if it doesn't exist.
+
+You can use \\[xref-pop-marker-stack] to get back to the original
+place."
   (interactive)
   (let ((filename (django-el--get-string-at-point))
         (current-app (djira-get-app-for-buffer (current-buffer))))
     (if (null filename)
         (message "Point must be over an string.")
       (let ((candidates (django-el--collect-candidate-files "templates" filename current-app)))
+        (xref-push-marker-stack)
         (find-file (cdr (assoc
                          (if (= (length candidates) 1)
                              (caar candidates)
@@ -223,7 +227,10 @@ mean of creating the template if it doesn't exist."
 
 Point must be on an string containing an AMD module identifier in
 the form 'app/module'. The function opens the file
-'app/js/module.js'."
+'app/js/module.js'.
+
+You can use \\[xref-pop-marker-stack] to get back to the original
+place."
   (interactive)
   (let ((amd-name (django-el--get-string-at-point)))
     (if (null amd-name)
@@ -231,6 +238,7 @@ the form 'app/module'. The function opens the file
       (let* ((current-app (djira-get-app-for-buffer (current-buffer)))
              (filename (django-el--js-controller-to-filename amd-name))
              (candidates (django-el--collect-candidate-files "static" filename current-app)))
+        (xref-push-marker-stack)
         (find-file (cdr (assoc
                          (if (= (length candidates) 1)
                              (caar candidates)
