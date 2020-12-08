@@ -1,8 +1,24 @@
--*- mode: org -*-
+#-*- mode: org -*-
+
+#+TODO: TODO STRT HOLD PAUS(@) WAIT(@) DONE(@)
+#+TODO: | CANC(c@)
+
+#+OPTIONS: ^:nil
 
 * TODOs
 
-** push the point
+* Already done
+
+** DONE push the point
 
 When visition/jumping to other files it may be useful to push the
 point in order to quickly return to the current file.
+
+** DONE add simple templating suport
+
+   - State "DONE"       from "TODO"       [2020-12-08 dt. 10:02] \\
+     s-format will do the trick.
+
+Sometimes it might be useful to iterate over values returned by djira
+(the fiels of a model for example) inserting some content for each of
+them. Some kind of templating is required.
