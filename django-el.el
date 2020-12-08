@@ -71,6 +71,7 @@
 (require 'f)
 (require 'ido)
 (require 's)
+(require 'seq)
 (require 'thingatpt)
 
 (defsubst django-el--in-string-p ()
@@ -184,6 +185,14 @@ python package."
         (ido-file-internal ido-default-file-method nil app-root)
       (find-file (concat app-root ".py")))))
 
+(defun django-el--format (template data)
+  "Format TEMPLATE interpolating variables from alist DATA."
+  (replace-regexp-in-string
+   "\\${\\([^}]+\\)}"
+   (lambda (md)
+     (let ((var (match-string 1 md)))
+       (format "%s" (cdr (assoc-string var data)))))
+   template t t))
 
 ;;;                    _             _   _
 ;;;  _ __   __ ___   _(_) __ _  __ _| |_(_) ___  _ __
@@ -393,6 +402,29 @@ Pressing '%' after a '{' inserts a second '%'."
       (insert "  %")
       (backward-char 2))))
 
+(defun django-el--apply-region-template-to-alists (data)
+  "Apply the region as a template to each element in DATA.
+
+DATA is a list of alists. This function uses the region as a
+template and for each element ELT in DATA replace the '${NAME}'
+markers in the template with the value associated with the key
+NAME in ELT. Each result is inserted in the buffer and the region
+is deleted.
+
+If the region is not active signals an user error."
+  (if (region-active-p)
+      (let ((template (buffer-substring-no-properties (mark) (point))))
+        (delete-region (mark) (point))
+        (push-mark)
+        (seq-do (lambda (x) (insert (django-el--format template x))) data))
+    (user-error "Region must be active")))
+
+(defun django-el-apply-region-template-to-model-fields ()
+  "Apply the region as a template to all fields on a model."
+  (interactive)
+  (let* ((model-name (django-el--ido-select-model))
+         (fields (djira-info-get-model-fields model-name)))
+    (django-el--apply-region-template-to-alists fields)))
 
 ;;;  _ __ ___   __ _ _ __   __ _  __ _  ___   _ __  _   _
 ;;; | '_ ` _ \ / _` | '_ \ / _` |/ _` |/ _ \ | '_ \| | | |
