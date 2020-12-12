@@ -280,15 +280,26 @@ place."
   (let ((view-info (djira-info-get-view-source url-name)))
     (if view-info
         (progn
+          (xref-push-marker-stack)
           (find-file (car view-info))
           (goto-char (point-min))
           (forward-line (1- (cadr view-info))))
       (message "Can't find view."))))
 
 (defun django-el-jump-to-view-by-url-name ()
-  "Select view by url name and jump to definition."
+  "Select view by URL name and jump to definition.
+
+If point is over an string that corresponds to the name of an URL
+jump to it otherwise prompt for the URL name.
+
+This command pushes the point to the xref stack."
   (interactive)
-  (django-el--jump-to-view-by-url-name (django-el--ido-select-url-by-name)))
+  (let* ((url-name (when (django-el--in-string-p)
+                     (django-el--get-string-at-point)))
+         (target (if (member url-name (djira-info-get-url-names))
+                     url-name
+                   (django-el--ido-select-url-by-name))))
+    (django-el--jump-to-view-by-url-name target)))
 
 (defun django-el-jump-to-view-by-url-pattern ()
   "Select view by url pattern and jump to definition."
