@@ -365,12 +365,12 @@ Convenience function that inserts a template name made from the
 current app and python module. Useful if you keep each view in a
 separated module."
   (interactive)
-  (insert "\"" (django-el--filename-from-app-and-module ".html") "\""))
+  (insert (django-el--filename-from-app-and-module ".html")))
 
 (defun django-el-insert-url-name ()
   "Insert url name."
   (interactive)
-  (insert "\"" (django-el--ido-select-url-by-name) "\""))
+  (insert (django-el--ido-select-url-by-name)))
 
 (defun django-el-insert-amd-js-controller-name ()
   "Generate and insert amd module name.
